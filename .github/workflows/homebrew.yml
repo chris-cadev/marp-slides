@@ -88,4 +88,4 @@ jobs:
           labels: |
             homepage
             marp-slides
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
