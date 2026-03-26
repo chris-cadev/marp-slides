@@ -1,15 +1,19 @@
 {
   "name": "marp-slides",
   "version": "0.2.3",
-  "description": "Export Marp presentations to PNG images with batch support",
-  "main": "marp-slides.ts",
+  "description": "Export Marp presentations to PNG images and videos with full animation support",
+  "main": "cli.ts",
   "type": "module",
+  "bin": {
+    "marp-slides": "./cli.ts"
+  },
   "files": [
-    "marp-slides.ts",
-    "marp-video.ts"
+    "cli.ts",
+    "commands/",
+    "shared/"
   ],
   "scripts": {
-    "start": "bun run marp-slides.ts",
+    "start": "bun run cli.ts",
     "release": "bun run scripts/release.ts",
     "release:patch": "bun run scripts/release.ts patch",
     "release:minor": "bun run scripts/release.ts minor",

@@ -4,88 +4,75 @@
 
 > Export Marp presentations to PNG images and videos with full animation support.
 
-[![npm](https://img.shields.io/npm/v/marp-slides@0.2.2.svg)](https://www.npmjs.com/package/marp-slides)
+[![npm](https://img.shields.io/npm/v/marp-slides@0.2.3.svg)](https://www.npmjs.com/package/marp-slides)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Quick Start
 
 ```bash
 # Try now (no install required)
-npx marp-slides presentation.md
+npx marp-slides image presentation.md
 
 # Install globally
 npm install -g marp-slides
 ```
 
-## Running the Scripts
+## Running the CLI
 
 These scripts can be run with any JavaScript runtime:
 
 ### Bun (Recommended)
 
 ```bash
-# Run directly
-bun run marp-slides.ts presentation.md
-bun run marp-video.ts presentation.md --slide 2 --duration 5
+# Run image export
+bun run cli.ts image presentation.md
 
-# Or install globally
-bun install -g marp-slides
-marp-slides presentation.md
-marp-video presentation.md --slide 2 --duration 5
+# Run video export
+bun run cli.ts video presentation.md --slide 1 --duration 5
 ```
 
 ### Deno
 
 ```bash
 # Run directly from JSR
-deno run jsr:@davinci/marp-slides/marp-slides presentation.md
-deno run jsr:@davinci/marp-slides/marp-video presentation.md --slide 2 --duration 5
-
-# Or run local files
-deno run marp-slides.ts presentation.md
-deno run marp-video.ts presentation.md --slide 2 --duration 5
+deno run jsr:@davinci/marp-slides/cli.ts image presentation.md
+deno run jsr:@davinci/marp-slides/cli.ts video presentation.md --slide 1 --duration 5
 ```
 
 ### Node.js / npm
 
 ```bash
 # Via npx (no install)
-npx marp-slides presentation.md
-npx marp-video presentation.md --slide 2 --duration 5
+npx marp-slides image presentation.md
+npx marp-slides video presentation.md --slide 1 --duration 5
 
 # Install globally
 npm install -g marp-slides
-marp-slides presentation.md
-marp-video presentation.md --slide 2 --duration 5
+marp-slides image presentation.md
+marp-slides video presentation.md --slide 1 --duration 5
 ```
 
-### Direct Download
+## Commands
 
-```bash
-# Download and run
-curl -fsSL https://github.com/chris-cadev/marp-slides/releases/latest/download/marp-slides -o marp-slides
-chmod +x marp-slides
-./marp-slides presentation.md
-```
-
-## Tools
-
-### marp-slides - Image Export
+### `marp-slides image`
 
 Export slides as PNG images with batch processing and parallel execution.
 
 ```bash
 # Single file
-marp-slides presentation.md
+marp-slides image presentation.md
 
 # Multiple files with glob pattern
-marp-slides "*.md"
+marp-slides image "*.md"
 
 # With resolution (hd, fhd, 2k, 4k, 5k)
-marp-slides presentation.md 4k
+marp-slides image presentation.md 4k
+
+# Override existing output
+marp-slides image "*.md" --override
 ```
 
-### marp-video - Video Export
+### `marp-slides video`
 
 Create videos from slides with full animation support. Records HTML animations including:
 - **Fragments** - Step-by-step bullet points and content
@@ -94,13 +81,13 @@ Create videos from slides with full animation support. Records HTML animations i
 
 ```bash
 # Record slide 2 for 5 seconds
-marp-video presentation.md --slide 2 --duration 5
+marp-slides video presentation.md --slide 2 --duration 5
 
 # Custom resolution and FPS
-marp-video presentation.md --slide 2 --duration 10 --resolution fhd --fps 30
+marp-slides video presentation.md --slide 2 --duration 10 --resolution fhd --fps 30
 
 # Interactive slide selection
-marp-video presentation.md --duration 5
+marp-slides video presentation.md --duration 5
 ```
 
 ## Installation
@@ -116,11 +103,11 @@ mise use -g bun ffmpeg
 **Manual:**
 
 1. Install [Bun](https://bun.sh/)
-2. For `marp-video`: Install [ffmpeg](https://ffmpeg.org/)
+2. Install [ffmpeg](https://ffmpeg.org/) (for video export)
 
 ## Options
 
-### marp-slides
+### image
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -131,7 +118,7 @@ mise use -g bun ffmpeg
 | `--quiet` | Suppress progress output | `false` |
 | `--dry-run` | Preview without creating files | `false` |
 
-### marp-video
+### video
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -145,16 +132,16 @@ mise use -g bun ffmpeg
 
 ```bash
 # Export all slides at 2K resolution
-marp-slides "presentations/*.md" 2k
+marp-slides image "presentations/*.md" 2k
 
 # Preview what would be created
-marp-slides "*.md" --dry-run
+marp-slides image "*.md" --dry-run
 
 # Create video from slide 3
-marp-video presentation.md --slide 3 --duration 5
+marp-slides video presentation.md --slide 3 --duration 5
 
 # Video with custom output path
-marp-video presentation.md --slide 2 --duration 10 --output intro.mp4
+marp-slides video presentation.md --slide 2 --duration 10 --output intro.mp4
 ```
 
 ## How It Works
@@ -167,10 +154,10 @@ presentation.md
 │           Marp CLI                  │
 └─────────────────────────────────────┘
     │
-    ├──► PNG images ──────────────────► (marp-slides)
+    ├──► PNG images ──────────────────► (image)
     │
     └──► HTML + Transitions ──► Browser ──► Frames ──► MP4
-                                              (marp-video)
+                                              (video)
 ```
 
 ## Documentation

@@ -127,12 +127,12 @@ async function main() {
     process.exit(1);
   }
 
+  const tag = `v${newVersion}`;
+  const commitMessage = `release: ${tag}`;
+
   const files = ["package.json", "jsr.json", "marp-slides.ts", "README.md"];
   log("\nStaging files...", "blue");
   await gitAdd(files);
-
-  const tag = `v${newVersion}`;
-  const commitMessage = `release: ${tag}`;
 
   log("\nCreating commit...", "blue");
   await gitCommit(commitMessage);
@@ -141,6 +141,10 @@ async function main() {
   log("\nCreating tag...", "blue");
   await gitTag(tag);
   log(`Tag created: ${tag}`, "green");
+
+  log("\n[IMPORTANT] Now run:", "yellow");
+  log("  git push && git push --tags", "reset");
+  log("to trigger the release workflow.", "reset");
 
   log("\n=== Release Summary ===\n", "cyan");
   log(`Version: ${currentVersion} → ${newVersion}`, "green");

@@ -1,25 +1,8 @@
-#!/usr/bin/env bun
-
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
-import * as https from "https";
+import { RESOLUTIONS, DEFAULT_RESOLUTION, RESOLUTION_KEYS } from "../shared/resolutions.ts";
 
-const VERSION = "0.2.3";
-const REPO_OWNER = "chris-cadev";
-const REPO_NAME = "marp-slides";
-const GITHUB_API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
-const DOWNLOAD_URL = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest/download/marp-slides`;
-
-const RESOLUTIONS: Record<string, { scale: number; width: number; height: number }> = {
-  hd: { scale: 1, width: 1280, height: 720 },
-  fhd: { scale: 2, width: 1920, height: 1080 },
-  "2k": { scale: 3, width: 2560, height: 1440 },
-  "4k": { scale: 4, width: 3840, height: 2160 },
-  "5k": { scale: 5, width: 5120, height: 2880 },
-};
-
-const DEFAULT_RESOLUTION = "2k";
 const DEFAULT_FORMAT = "png";
 const DEFAULT_QUALITY = 90;
 const DEFAULT_PATTERN = "{name}.{n3}";
@@ -37,9 +20,6 @@ interface CliArgs {
   json: boolean;
   dryRun: boolean;
   parallel: number | null;
-  showVersion: boolean;
-  update: boolean;
-  forceUpdate: boolean;
 }
 
 interface FileResult {
@@ -62,12 +42,6 @@ interface JsonOutput {
   errors: string[];
 }
 
-interface GitHubRelease {
-  tag_name: string;
-  html_url: string;
-  body?: string;
-}
-
 function log(message: string, quiet = false) {
   if (!quiet) console.log(message);
 }
@@ -76,8 +50,7 @@ function logError(message: string) {
   console.error(message);
 }
 
-function parseArgs(): CliArgs {
-  const args = Bun.argv.slice(2);
+export function parseArgs(args: string[]): CliArgs {
   const result: CliArgs = {
     inputs: [],
     resolution: null,
@@ -90,12 +63,8 @@ function parseArgs(): CliArgs {
     json: false,
     dryRun: false,
     parallel: null,
-    showVersion: false,
-    update: false,
-    forceUpdate: false,
   };
 
-  const resolutionKeys = Object.keys(RESOLUTIONS);
   const formatOptions = ["png", "webp", "jpg"];
 
   for (let i = 0; i < args.length; i++) {
@@ -109,12 +78,6 @@ function parseArgs(): CliArgs {
       result.json = true;
     } else if (arg === "--dry-run") {
       result.dryRun = true;
-    } else if (arg === "--version" || arg === "-v") {
-      result.showVersion = true;
-    } else if (arg === "update") {
-      result.update = true;
-    } else if (arg === "--force" || arg === "-f") {
-      result.forceUpdate = true;
     } else if (arg === "--parallel" && i + 1 < args.length) {
       const val = parseInt(args[++i], 10);
       if (!isNaN(val) && val > 0) result.parallel = val;
@@ -128,9 +91,12 @@ function parseArgs(): CliArgs {
       if (!isNaN(q) && q >= 0 && q <= 100) result.quality = q;
     } else if (arg === "--pattern" && i + 1 < args.length) {
       result.pattern = args[++i];
+    } else if (arg === "--help" || arg === "-h") {
+      printHelp();
+      process.exit(0);
     } else if (arg.startsWith("-")) {
       // Unknown flag, ignore
-    } else if (resolutionKeys.includes(arg.toLowerCase())) {
+    } else if (RESOLUTION_KEYS.includes(arg.toLowerCase())) {
       result.resolution = arg.toLowerCase();
     } else {
       result.inputs.push(arg);
@@ -138,6 +104,28 @@ function parseArgs(): CliArgs {
   }
 
   return result;
+}
+
+export function printHelp() {
+  console.log("Usage: marp-slides image <input...> [resolution] [options]");
+  console.log("");
+  console.log("Arguments:");
+  console.log("  <input...>              .md files or glob patterns (e.g., *.md, ./slides/**/*.md)");
+  console.log("  [resolution]            hd, fhd, 2k, 4k, 5k (default: 2k or interactive)");
+  console.log("");
+  console.log("Options:");
+  console.log("  --override              Skip confirmation and override existing folders");
+  console.log("  --output-dir <path>     Custom output base directory");
+  console.log("  --format <fmt>          png, webp, jpg (default: png)");
+  console.log("  --quality <n>          Image quality 0-100 for webp/jpg (default: 90)");
+  console.log("  --pattern <pattern>    Filename pattern (default: {name}.{n3})");
+  console.log("  --parallel <n>         Number of parallel workers (default: auto)");
+  console.log("  --quiet                 Suppress progress output");
+  console.log("  --json                 Output machine-readable JSON");
+  console.log("  --dry-run              Preview without rendering");
+  console.log("  --help, -h             Show this help");
+  console.log("");
+  console.log("Pattern variables: {name}, {n}, {n2}, {n3}, {n4}");
 }
 
 async function expandGlob(pattern: string): Promise<string[]> {
@@ -152,7 +140,7 @@ function getOutputDir(mdPath: string, outputDir: string | null): string {
   return outputDir ? path.join(outputDir, mdBasename) : path.join(mdDir, mdBasename);
 }
 
-function applyPattern(pattern: string, name: string, n: number): string {
+export function applyPattern(pattern: string, name: string, n: number): string {
   return pattern
     .replace(/{name}/g, name)
     .replace(/{n}/g, n.toString())
@@ -194,110 +182,6 @@ async function selectFilesToOverride(files: string[]): Promise<Set<string>> {
   });
 
   return new Set((selected as string[]) || []);
-}
-
-async function fetchLatestVersion(): Promise<string | null> {
-  return new Promise((resolve) => {
-    try {
-      const url = new URL(GITHUB_API_URL);
-      const options = {
-        hostname: url.hostname,
-        path: url.pathname,
-        method: "GET",
-        headers: {
-          "User-Agent": "marp-slides",
-          "Accept": "application/vnd.github.v3+json",
-        },
-      };
-
-      const req = https.request(options, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          try {
-            const release: GitHubRelease = JSON.parse(data);
-            resolve(release.tag_name.replace(/^v/, ""));
-          } catch {
-            resolve(null);
-          }
-        });
-      });
-
-      req.on("error", () => resolve(null));
-      req.end();
-    } catch {
-      resolve(null);
-    }
-  });
-}
-
-async function downloadFile(url: string, destPath: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    try {
-      const file = fs.createWriteStream(destPath);
-      https.get(url, { headers: { "User-Agent": "marp-slides" } }, (res) => {
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          const redirectUrl = res.headers.location;
-          if (redirectUrl) {
-            downloadFile(redirectUrl, destPath).then(resolve);
-            return;
-          }
-        }
-        res.pipe(file);
-        file.on("finish", () => {
-          file.close();
-          resolve(true);
-        });
-      }).on("error", () => {
-        fs.unlinkSync(destPath);
-        resolve(false);
-      });
-    } catch {
-      resolve(false);
-    }
-  });
-}
-
-async function performUpdate(force: boolean): Promise<void> {
-  console.log("Checking for updates...");
-
-  const latestVersion = await fetchLatestVersion();
-  if (!latestVersion) {
-    logError("Could not fetch latest version. Are you connected to the internet?");
-    process.exit(1);
-  }
-
-  const currentClean = VERSION.replace(/-.*$/, "");
-  const latestClean = latestVersion.replace(/-.*$/, "");
-
-  if (!force && latestClean === currentClean) {
-    console.log(`You're already on the latest version: v${VERSION}`);
-    return;
-  }
-
-  console.log(`Updating from v${VERSION} to v${latestVersion}...`);
-
-  const tempPath = path.join(os.tmpdir(), `marp-slides-${Date.now()}`);
-  const success = await downloadFile(DOWNLOAD_URL, tempPath);
-
-  if (!success) {
-    logError("Download failed. Please try again later.");
-    fs.unlinkSync(tempPath);
-    process.exit(1);
-  }
-
-  fs.chmodSync(tempPath, 0o755);
-
-  const currentScriptPath = Bun.argv[1] || import.meta.filename;
-  if (currentScriptPath && fs.existsSync(currentScriptPath)) {
-    fs.copyFileSync(tempPath, currentScriptPath);
-    fs.unlinkSync(tempPath);
-    console.log(`Updated successfully! New version: v${latestVersion}`);
-  } else {
-    logError("Could not determine script location for update.");
-    fs.unlinkSync(tempPath);
-    process.exit(1);
-  }
 }
 
 async function processFile(
@@ -410,48 +294,16 @@ async function processFile(
   };
 }
 
-async function main() {
-  const args = parseArgs();
+export async function run(args: string[]) {
+  const parsedArgs = parseArgs(args);
 
-  if (args.showVersion) {
-    console.log(`marp-slides v${VERSION}`);
-    return;
-  }
-
-  if (args.update) {
-    await performUpdate(args.forceUpdate);
-    return;
-  }
-
-  if (args.inputs.length === 0) {
-    console.error("Usage: marp-slides <input...> [resolution] [options]");
-    console.error("       marp-slides update [--force]");
-    console.error("");
-    console.error("Commands:");
-    console.error("  update [--force]     Check for updates and install latest version");
-    console.error("");
-    console.error("Arguments:");
-    console.error("  <input...>              .md files or glob patterns (e.g., *.md, ./slides/**/*.md)");
-    console.error("  [resolution]            hd, fhd, 2k, 4k, 5k (default: 2k or interactive)");
-    console.error("");
-    console.error("Options:");
-    console.error("  --override              Skip confirmation and override existing folders");
-    console.error("  --output-dir <path>     Custom output base directory");
-    console.error("  --format <fmt>          png, webp, jpg (default: png)");
-    console.error("  --quality <n>          Image quality 0-100 for webp/jpg (default: 90)");
-    console.error("  --pattern <pattern>    Filename pattern (default: {name}.{n3})");
-    console.error("  --parallel <n>         Number of parallel workers (default: auto)");
-    console.error("  --quiet                 Suppress progress output");
-    console.error("  --json                 Output machine-readable JSON");
-    console.error("  --dry-run              Preview without rendering");
-    console.error("  --version, -v          Show version information");
-    console.error("");
-    console.error("Pattern variables: {name}, {n}, {n2}, {n3}, {n4}");
+  if (parsedArgs.inputs.length === 0) {
+    printHelp();
     process.exit(1);
   }
 
   const allFiles: string[] = [];
-  for (const input of args.inputs) {
+  for (const input of parsedArgs.inputs) {
     const files = await expandGlob(input);
     for (const file of files) {
       if (!allFiles.includes(file)) allFiles.push(file);
@@ -478,18 +330,18 @@ async function main() {
     process.exit(1);
   }
 
-  if (missingFiles.length > 0 && !args.quiet) {
+  if (missingFiles.length > 0 && !parsedArgs.quiet) {
     log(`Warning: ${missingFiles.length} file(s) not found, skipping`);
   }
 
   const existingFolders = validFiles.filter((f) => {
-    const outputDir = getOutputDir(f, args.outputDir);
+    const outputDir = getOutputDir(f, parsedArgs.outputDir);
     return fs.existsSync(outputDir);
   });
 
   const filesToProcess = validFiles.filter((f) => !existingFolders.includes(f));
 
-  if (existingFolders.length > 0 && !args.override && !args.dryRun) {
+  if (existingFolders.length > 0 && !parsedArgs.override && !parsedArgs.dryRun) {
     if (existingFolders.length === validFiles.length) {
       logError("Error: All output folders exist. Use --override to overwrite.");
       process.exit(1);
@@ -501,7 +353,7 @@ async function main() {
         filesToProcess.push(f);
       }
     }
-  } else if (args.override) {
+  } else if (parsedArgs.override) {
     filesToProcess.push(...existingFolders);
   }
 
@@ -510,7 +362,7 @@ async function main() {
     process.exit(0);
   }
 
-  let resolution = args.resolution;
+  let resolution = parsedArgs.resolution;
   if (!resolution) {
     resolution = await selectResolution();
   }
@@ -522,22 +374,21 @@ async function main() {
 
   const resInfo = RESOLUTIONS[resolution];
 
-  if (!args.json) {
-    log("\n=== Marp Slides ===");
-    log(`Version: ${VERSION}`);
+  if (!parsedArgs.json) {
+    log("\n=== Marp Slides (Image) ===");
     log(`Files: ${filesToProcess.length}`);
     log(`Resolution: ${resolution.toUpperCase()} (${resInfo.width}x${resInfo.height})`);
-    log(`Format: ${args.format}${args.format !== "png" ? ` @ ${args.quality}%` : ""}`);
-    log(`Pattern: ${args.pattern}`);
+    log(`Format: ${parsedArgs.format}${parsedArgs.format !== "png" ? ` @ ${parsedArgs.quality}%` : ""}`);
+    log(`Pattern: ${parsedArgs.pattern}`);
     log("");
   }
 
   const cpuCount = os.cpus().length;
   const defaultParallelism = Math.max(1, Math.floor(cpuCount * DEFAULT_PARALLELISM_RATIO));
-  const maxParallel = args.parallel ?? defaultParallelism;
+  const maxParallel = parsedArgs.parallel ?? defaultParallelism;
   const parallelism = Math.min(maxParallel, filesToProcess.length);
 
-  if (!args.json) {
+  if (!parsedArgs.json) {
     log(`Parallelism: ${parallelism}/${cpuCount} cores`);
     log("");
   }
@@ -545,12 +396,12 @@ async function main() {
   const results: FileResult[] = [];
   let totalSlides = 0;
 
-  if (args.dryRun) {
+  if (parsedArgs.dryRun) {
     log("Files to process:");
     for (const file of filesToProcess) {
       const mdBasename = path.basename(file, ".md");
-      const outputDir = getOutputDir(file, args.outputDir);
-      const patternExample = applyPattern(args.pattern, mdBasename, 1) + ".png";
+      const outputDir = getOutputDir(file, parsedArgs.outputDir);
+      const patternExample = applyPattern(parsedArgs.pattern, mdBasename, 1) + ".png";
       log(`  ${file}`);
       log(`    → ${outputDir}/${patternExample}`);
     }
@@ -558,7 +409,7 @@ async function main() {
     for (let i = 0; i < filesToProcess.length; i += parallelism) {
       const batch = filesToProcess.slice(i, i + parallelism);
       const batchResults = await Promise.all(
-        batch.map((file) => processFile(file, args, resolution!, args.quiet))
+        batch.map((file) => processFile(file, parsedArgs, resolution!, parsedArgs.quiet))
       );
       for (const result of batchResults) {
         results.push(result);
@@ -571,7 +422,7 @@ async function main() {
   const skippedCount = results.filter((r) => r.status === "skipped").length;
   const failedCount = results.filter((r) => r.status === "failed").length;
 
-  if (args.json) {
+  if (parsedArgs.json) {
     const jsonOutput: JsonOutput = {
       success: failedCount === 0 && skippedCount === 0,
       total: validFiles.length,
@@ -591,13 +442,6 @@ async function main() {
     log(`Total slides: ${totalSlides}`);
   }
 
-  if (args.dryRun) process.exit(2);
+  if (parsedArgs.dryRun) process.exit(2);
   if (failedCount > 0) process.exit(3);
 }
-
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
-
-export { main, parseArgs, expandGlob, getOutputDir, applyPattern, processFile, selectResolution, fetchLatestVersion };
