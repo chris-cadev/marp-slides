@@ -77,6 +77,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          base: main
           commit-message: "Update MarpSlides to ${{ steps.version.outputs.VERSION }}"
           branch: marp-slides-${{ steps.version.outputs.VERSION }}
           delete-branch: true
