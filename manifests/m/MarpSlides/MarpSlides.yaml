@@ -1,0 +1,25 @@
+PackageIdentifier: MarpSlides
+PackageVersion: "0.1.0-beta.19"
+Publisher: chris-cadev
+PackageName: marp-slides
+PackageDescription: Export Marp presentations to PNG images with batch support
+License: MIT
+LicenseUrl: https://github.com/chris-cadev/marp-slides/blob/main/LICENSE
+ProjectUrl: https://github.com/chris-cadev/marp-slides
+ShortDescription: Export Marp presentations to PNG images
+Homepage: https://github.com/chris-cadev/marp-slides
+Tags:
+  - marp
+  - presentation
+  - slides
+  - png
+  - export
+Installers:
+  - Architecture: x64
+    InstallerType: portable
+    InstallerUrl: https://github.com/chris-cadev/marp-slides/releases/download/v0.1.0-beta.19/marp-slides
+    InstallerSha256: 4fd947a694ae30b931d2ee97affe6af690713a66a0c7b1a793481b95fd1de1c1
+    Commands:
+      - marp-slides
+ManifestType: singleton
+ManifestVersion: 1.9.0
