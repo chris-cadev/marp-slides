@@ -1,6 +1,6 @@
 {
   "name": "@davinci/marp-slides",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Export Marp presentations to PNG images with batch support",
   "exports": "./marp-slides.ts",
   "publish": {
