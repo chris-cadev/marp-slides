@@ -3,7 +3,7 @@ name: winget
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Release"]
+    workflows: ["Publish"]
     types: [completed]
 
 jobs:
