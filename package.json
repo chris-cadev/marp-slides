@@ -1,0 +1,45 @@
+{
+  "name": "marp-slides",
+  "version": "0.1.0-beta.1",
+  "description": "Export Marp presentations to PNG images with batch support",
+  "main": "marp-slides.ts",
+  "type": "module",
+  "bin": {
+    "marp-slides": "./marp-slides.ts"
+  },
+  "files": [
+    "marp-slides.ts"
+  ],
+  "scripts": {
+    "start": "bun run marp-slides.ts"
+  },
+  "keywords": [
+    "marp",
+    "presentation",
+    "slides",
+    "png",
+    "export",
+    "markdown"
+  ],
+  "author": "chris-cadev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris-cadev/marp-slides"
+  },
+  "bugs": {
+    "url": "https://github.com/chris-cadev/marp-slides/issues"
+  },
+  "homepage": "https://github.com/chris-cadev/marp-slides#readme",
+  "peerDependencies": {
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "tinyglobby": "^0.2.15"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+bun.lock
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.code-workspace

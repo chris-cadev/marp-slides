@@ -1,0 +1,17 @@
+{
+  "name": "@marp-slides/marp-slides",
+  "version": "0.1.0-beta.1",
+  "description": "Export Marp presentations to PNG images with batch support",
+  "exports": "./marp-slides.ts",
+  "publish": {
+    "exclude": [
+      ".gitignore",
+      "LICENSE",
+      "README.md",
+      ".github/"
+    ]
+  },
+  "license": "MIT",
+  "repository": "https://github.com/chris-cadev/marp-slides",
+  "bugs": "https://github.com/chris-cadev/marp-slides/issues"
+}
