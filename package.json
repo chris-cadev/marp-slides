@@ -1,6 +1,6 @@
 {
   "name": "marp-slides",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Export Marp presentations to PNG images with batch support",
   "main": "marp-slides.ts",
   "type": "module",

@@ -4,7 +4,7 @@
 
 > Export Marp presentations to PNG images and videos with full animation support.
 
-[![npm](https://img.shields.io/npm/v/marp-slides@0.2.0.svg)](https://www.npmjs.com/package/marp-slides)
+[![npm](https://img.shields.io/npm/v/marp-slides@0.2.1.svg)](https://www.npmjs.com/package/marp-slides)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Quick Start
