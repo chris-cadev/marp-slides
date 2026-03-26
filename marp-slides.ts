@@ -599,3 +599,5 @@ main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
+
+export { main, parseArgs, expandGlob, getOutputDir, applyPattern, processFile, selectResolution, fetchLatestVersion };
