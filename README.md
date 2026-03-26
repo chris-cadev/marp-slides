@@ -2,8 +2,8 @@
 
 > Export Marp presentations to PNG images with batch processing, parallel execution, and interactive prompts.
 
-[![npm](https://img.shields.io/npm/v/marp-slides.svg)](https://www.npmjs.com/package/marp-slides)
-[![JSR](https://jsr.io/badges/v/@davinci/marp-slides.svg)](https://jsr.io/@davinci/marp-slides)
+[![npm](https://img.shields.io/npm/v/marp-slides@0.1.0.svg)](https://www.npmjs.com/package/marp-slides)
+[![JSR](https://jsr.io/badges/v/@davinci/marp-slides@0.1.0.svg)](https://jsr.io/@davinci/marp-slides)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Quick Start
