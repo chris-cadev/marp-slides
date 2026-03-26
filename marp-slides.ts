@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as https from "https";
 
-const VERSION = "0.2.2";
+const VERSION = "0.2.3";
 const REPO_OWNER = "chris-cadev";
 const REPO_NAME = "marp-slides";
 const GITHUB_API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
