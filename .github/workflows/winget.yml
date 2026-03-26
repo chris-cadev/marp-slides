@@ -33,37 +33,26 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Get latest release info
-        id: release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const response = await github.rest.repos.getLatestRelease({
-              owner: 'chris-cadev',
-              repo: 'marp-slides'
-            });
-            return response.data;
-          result-json: ${{ toJson(steps.version.outputs.VERSION) }}
-
-      - name: Get download URL
-        id: download
-        run: echo "URL=https://github.com/chris-cadev/marp-slides/releases/download/v${{ steps.version.outputs.VERSION }}/marp-slides" >> $GITHUB_OUTPUT
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          echo "hash=$(sha256sum marp-slides.ts | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Create manifest
+        env:
+          SHA256: ${{ steps.sha.outputs.hash }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          mkdir -p manifests/m/MarpSlides
-          cat > manifests/m/MarpSlides/MarpSlides.yaml << 'EOF'
+          mkdir -p winget-manifest
+          cat > winget-manifest/marp-slides.yaml << 'EOF'
           PackageIdentifier: MarpSlides
-          PackageVersion: "$VERSION"
+          PackageVersion: "VERSION"
           Publisher: chris-cadev
           PackageName: marp-slides
           PackageDescription: Export Marp presentations to PNG images with batch support
           License: MIT
           LicenseUrl: https://github.com/chris-cadev/marp-slides/blob/main/LICENSE
           ProjectUrl: https://github.com/chris-cadev/marp-slides
-          Agreement: 
-            LicenseUrl: https://github.com/chris-cadev/marp-slides/blob/main/LICENSE
-            AgreementLabel: MIT License
           ShortDescription: Export Marp presentations to PNG images
           Homepage: https://github.com/chris-cadev/marp-slides
           Tags:
@@ -75,30 +64,20 @@ jobs:
           Installers:
             - Architecture: x64
               InstallerType: portable
-              InstallerUrl: "$DOWNLOAD_URL"
-              InstallerSha256: "$SHA256"
+              InstallerUrl: https://github.com/chris-cadev/marp-slides/releases/download/vVERSION/marp-slides
+              InstallerSha256: SHA256
               Commands:
                 - marp-slides
           ManifestType: singleton
           ManifestVersion: 1.9.0
           EOF
-          sed -i "s/\$VERSION/${{ steps.version.outputs.VERSION }}/g" manifests/m/MarpSlides/MarpSlides.yaml
-          sed -i "s|\$DOWNLOAD_URL|${{ steps.download.outputs.URL }}|g" manifests/m/MarpSlides/MarpSlides.yaml
-
-      - name: Calculate SHA256
-        id: sha
-        run: |
-          sha256sum marp-slides.ts | awk '{print $1}' > sha256.txt
-          echo "hash=$(cat sha256.txt)" >> $GITHUB_OUTPUT
-
-      - name: Update manifest with SHA256
-        run: |
-          sed -i "s/\$SHA256/${{ steps.sha.outputs.hash }}/g" manifests/m/MarpSlides/MarpSlides.yaml
+          sed -i "s/VERSION/${{ env.VERSION }}/g" winget-manifest/marp-slides.yaml
+          sed -i "s/SHA256/${{ env.SHA256 }}/g" winget-manifest/marp-slides.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          path: manifests
+          path: winget-manifest
           commit-message: "Update MarpSlides to ${{ steps.version.outputs.VERSION }}"
           branch: marp-slides-${{ steps.version.outputs.VERSION }}
           delete-branch: true

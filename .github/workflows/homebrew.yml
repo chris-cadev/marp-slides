@@ -30,8 +30,7 @@ jobs:
       - name: Calculate SHA256
         id: sha
         run: |
-          sha256sum marp-slides.ts | awk '{print $1}' > sha256.txt
-          echo "hash=$(cat sha256.txt)" >> $GITHUB_OUTPUT
+          echo "hash=$(sha256sum marp-slides.ts | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Get version
         id: version
@@ -40,15 +39,19 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
 
       - name: Create Homebrew Formula
+        env:
+          SHA256: ${{ steps.sha.outputs.hash }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          cat > homebrew-formula.rb << 'EOF'
+          mkdir -p homebrew
+          cat > homebrew/marp-slides.rb << 'EOF'
           class MarpSlides < Formula
             desc "Export Marp presentations to PNG images"
             homepage "https://github.com/chris-cadev/marp-slides"
-            url "https://github.com/chris-cadev/marp-slides/releases/download/v$VERSION/marp-slides"
-            sha256 "$SHA256"
+            url "https://github.com/chris-cadev/marp-slides/releases/download/vVERSION/marp-slides"
+            sha256 "SHA256"
             license "MIT"
-            version "$VERSION"
+            version "VERSION"
 
             depends_on "bun" => :recommended
 
@@ -59,14 +62,15 @@ jobs:
             test do
               system "#{bin}/marp-slides", "--version"
             end
+          end
           EOF
-          sed -i "s/\$VERSION/${{ steps.version.outputs.VERSION }}/g" homebrew-formula.rb
-          sed -i "s/\$SHA256/${{ steps.sha.outputs.hash }}/g" homebrew-formula.rb
+          sed -i "s/VERSION/${{ env.VERSION }}/g" homebrew/marp-slides.rb
+          sed -i "s/SHA256/${{ env.SHA256 }}/g" homebrew/marp-slides.rb
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          path: homebrew-formula.rb
+          path: homebrew
           commit-message: "Update marp-slides to ${{ steps.version.outputs.VERSION }}"
           branch: marp-slides-${{ steps.version.outputs.VERSION }}
           delete-branch: true
