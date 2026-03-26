@@ -43,6 +43,7 @@ jobs:
           SHA256: ${{ steps.sha.outputs.hash }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
+          mkdir -p Formula
           cat > Formula/marp-slides.rb << 'EOF'
           class MarpSlides < Formula
             desc "Export Marp presentations to PNG images"
