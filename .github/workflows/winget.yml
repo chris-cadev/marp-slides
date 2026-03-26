@@ -6,6 +6,9 @@ on:
     workflows: ["Publish"]
     types: [completed]
 
+permissions:
+  contents: write
+
 jobs:
   winget:
     runs-on: ubuntu-latest

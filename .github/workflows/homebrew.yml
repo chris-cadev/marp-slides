@@ -6,6 +6,9 @@ on:
     workflows: ["Publish"]
     types: [completed]
 
+permissions:
+  contents: write
+
 jobs:
   homebrew:
     runs-on: ubuntu-latest
