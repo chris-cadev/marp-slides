@@ -1,8 +1,10 @@
 # marp-slides
 
-> Export Marp presentations to PNG images with batch processing and parallel execution.
+<img src="logo.jpg" alt="marp-slides" width="200">
 
-[![npm](https://img.shields.io/npm/v/marp-slides@0.1.0.svg)](https://www.npmjs.com/package/marp-slides)
+> Export Marp presentations to PNG images and videos with full animation support.
+
+[![npm](https://img.shields.io/npm/v/marp-slides@0.2.0.svg)](https://www.npmjs.com/package/marp-slides)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Quick Start
@@ -15,7 +17,9 @@ npx marp-slides presentation.md
 npm install -g marp-slides
 ```
 
-## marp-slides - Image Export
+## Tools
+
+### marp-slides - Image Export
 
 Export slides as PNG images with batch processing and parallel execution.
 
@@ -30,16 +34,22 @@ marp-slides "*.md"
 marp-slides presentation.md 4k
 ```
 
-## marp-video - Video Export
+### marp-video - Video Export
 
-Create videos from slides with full animation support (fragments, transitions).
+Create videos from slides with full animation support. Records HTML animations including:
+- **Fragments** - Step-by-step bullet points and content
+- **Transitions** - Slide-to-slide animations (fade, slide, zoom, etc.)
+- **CSS effects** - Any custom animations in your slides
 
 ```bash
 # Record slide 2 for 5 seconds
-npx marp-video presentation.md --slide 2 --duration 5
+marp-video presentation.md --slide 2 --duration 5
 
-# Custom resolution
-marp-video presentation.md --slide 2 --duration 10 --resolution fhd
+# Custom resolution and FPS
+marp-video presentation.md --slide 2 --duration 10 --resolution fhd --fps 30
+
+# Interactive slide selection
+marp-video presentation.md --duration 5
 ```
 
 ## Installation
@@ -61,24 +71,24 @@ mise use -g bun ffmpeg
 
 ### marp-slides
 
-| Option                | Description                                      | Default                |
-| --------------------- | ------------------------------------------------ | ---------------------- |
-| `resolution`          | Output resolution: `hd`, `fhd`, `2k`, `4k`, `5k` | `2k` or interactive    |
-| `--override`          | Overwrite existing output folders                | `false`                |
-| `--output-dir <path>` | Custom output directory                          | Same as `.md` location |
-| `--format <fmt>`      | Image format: `png`, `webp`, `jpg`               | `png`                  |
-| `--quiet`             | Suppress progress output                         | `false`                |
-| `--dry-run`           | Preview without creating files                   | `false`                |
+| Option | Description | Default |
+|--------|-------------|---------|
+| `resolution` | Output resolution: `hd`, `fhd`, `2k`, `4k`, `5k` | `2k` or interactive |
+| `--override` | Overwrite existing output folders | `false` |
+| `--output-dir <path>` | Custom output directory | Same as `.md` location |
+| `--format <fmt>` | Image format: `png`, `webp`, `jpg` | `png` |
+| `--quiet` | Suppress progress output | `false` |
+| `--dry-run` | Preview without creating files | `false` |
 
 ### marp-video
 
-| Option               | Description                                     | Default        |
-| -------------------- | ----------------------------------------------- | -------------- |
-| `--slide <n>`        | Slide number to record                          | Interactive    |
-| `--duration <sec>`   | Recording duration                              | Required       |
-| `--resolution <res>` | Video resolution: `hd`, `fhd`, `2k`, `4k`, `5k` | `2k`           |
-| `--fps <n>`          | Frames per second                               | `30`           |
-| `--output <path>`    | Output video path                               | Auto-generated |
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--slide <n>` | Slide number to record | Interactive |
+| `--duration <sec>` | Recording duration | Required |
+| `--resolution <res>` | Video resolution: `hd`, `fhd`, `2k`, `4k`, `5k` | `2k` |
+| `--fps <n>` | Frames per second | `30` |
+| `--output <path>` | Output video path | Auto-generated |
 
 ## Examples
 
@@ -102,14 +112,14 @@ marp-video presentation.md --slide 2 --duration 10 --output intro.mp4
 presentation.md
     │
     ▼
-Marp CLI renders
+┌─────────────────────────────────────┐
+│           Marp CLI                  │
+└─────────────────────────────────────┘
     │
-    ├──> PNG images (marp-slides)
+    ├──► PNG images ──────────────────► (marp-slides)
     │
-    └──> HTML + Browser (marp-video)
-              │
-              ▼
-         Frames → MP4
+    └──► HTML + Transitions ──► Browser ──► Frames ──► MP4
+                                              (marp-video)
 ```
 
 ## Documentation
