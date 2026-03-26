@@ -17,6 +17,57 @@ npx marp-slides presentation.md
 npm install -g marp-slides
 ```
 
+## Running the Scripts
+
+These scripts can be run with any JavaScript runtime:
+
+### Bun (Recommended)
+
+```bash
+# Run directly
+bun run marp-slides.ts presentation.md
+bun run marp-video.ts presentation.md --slide 2 --duration 5
+
+# Or install globally
+bun install -g marp-slides
+marp-slides presentation.md
+marp-video presentation.md --slide 2 --duration 5
+```
+
+### Deno
+
+```bash
+# Run directly from JSR
+deno run jsr:@davinci/marp-slides/marp-slides presentation.md
+deno run jsr:@davinci/marp-slides/marp-video presentation.md --slide 2 --duration 5
+
+# Or run local files
+deno run marp-slides.ts presentation.md
+deno run marp-video.ts presentation.md --slide 2 --duration 5
+```
+
+### Node.js / npm
+
+```bash
+# Via npx (no install)
+npx marp-slides presentation.md
+npx marp-video presentation.md --slide 2 --duration 5
+
+# Install globally
+npm install -g marp-slides
+marp-slides presentation.md
+marp-video presentation.md --slide 2 --duration 5
+```
+
+### Direct Download
+
+```bash
+# Download and run
+curl -fsSL https://github.com/chris-cadev/marp-slides/releases/latest/download/marp-slides -o marp-slides
+chmod +x marp-slides
+./marp-slides presentation.md
+```
+
 ## Tools
 
 ### marp-slides - Image Export
