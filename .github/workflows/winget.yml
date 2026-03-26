@@ -43,8 +43,8 @@ jobs:
           SHA256: ${{ steps.sha.outputs.hash }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          mkdir -p winget-manifest
-          cat > winget-manifest/marp-slides.yaml << 'EOF'
+          mkdir -p manifests/m/MarpSlides
+          cat > manifests/m/MarpSlides/MarpSlides.yaml << 'EOF'
           PackageIdentifier: MarpSlides
           PackageVersion: "VERSION"
           Publisher: chris-cadev
@@ -71,13 +71,12 @@ jobs:
           ManifestType: singleton
           ManifestVersion: 1.9.0
           EOF
-          sed -i "s/VERSION/${{ env.VERSION }}/g" winget-manifest/marp-slides.yaml
-          sed -i "s/SHA256/${{ env.SHA256 }}/g" winget-manifest/marp-slides.yaml
+          sed -i "s/VERSION/${{ env.VERSION }}/g" manifests/m/MarpSlides/MarpSlides.yaml
+          sed -i "s/SHA256/${{ env.SHA256 }}/g" manifests/m/MarpSlides/MarpSlides.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          path: winget-manifest
           commit-message: "Update MarpSlides to ${{ steps.version.outputs.VERSION }}"
           branch: marp-slides-${{ steps.version.outputs.VERSION }}
           delete-branch: true

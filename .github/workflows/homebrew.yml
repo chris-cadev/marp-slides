@@ -43,8 +43,7 @@ jobs:
           SHA256: ${{ steps.sha.outputs.hash }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          mkdir -p homebrew
-          cat > homebrew/marp-slides.rb << 'EOF'
+          cat > Formula/marp-slides.rb << 'EOF'
           class MarpSlides < Formula
             desc "Export Marp presentations to PNG images"
             homepage "https://github.com/chris-cadev/marp-slides"
@@ -64,13 +63,12 @@ jobs:
             end
           end
           EOF
-          sed -i "s/VERSION/${{ env.VERSION }}/g" homebrew/marp-slides.rb
-          sed -i "s/SHA256/${{ env.SHA256 }}/g" homebrew/marp-slides.rb
+          sed -i "s/VERSION/${{ env.VERSION }}/g" Formula/marp-slides.rb
+          sed -i "s/SHA256/${{ env.SHA256 }}/g" Formula/marp-slides.rb
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          path: homebrew
           commit-message: "Update marp-slides to ${{ steps.version.outputs.VERSION }}"
           branch: marp-slides-${{ steps.version.outputs.VERSION }}
           delete-branch: true
