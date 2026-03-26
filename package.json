@@ -8,7 +8,13 @@
     "marp-slides.ts"
   ],
   "scripts": {
-    "start": "bun run marp-slides.ts"
+    "start": "bun run marp-slides.ts",
+    "release": "bun run scripts/release.ts",
+    "release:patch": "bun run scripts/release.ts patch",
+    "release:minor": "bun run scripts/release.ts minor",
+    "release:major": "bun run scripts/release.ts major",
+    "release:beta": "bun run scripts/release.ts patch --pre beta",
+    "release:dry": "bun run scripts/release.ts --dry-run"
   },
   "keywords": [
     "marp",

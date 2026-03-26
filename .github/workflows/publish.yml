@@ -38,7 +38,7 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Publish to npm (OIDC)
-        run: npm publish --provenance --access public --tag beta
+        run: npm publish --provenance --access public --tag latest
 
       - name: Publish to JSR (OIDC)
         run: bunx jsr publish
