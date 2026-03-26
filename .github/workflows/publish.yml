@@ -39,6 +39,7 @@ jobs:
 
       - name: Publish to npm (OIDC)
         run: npm publish --provenance --access public --tag latest
+        continue-on-error: true
 
       - name: Publish to JSR (OIDC)
         run: bunx jsr publish
