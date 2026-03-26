@@ -3,7 +3,7 @@
 import { run as runImage, parseArgs as parseImageArgs, printHelp as printImageHelp } from "./commands/image.ts";
 import { run as runVideo, parseArgs as parseVideoArgs, printHelp as printVideoHelp } from "./commands/video.ts";
 
-const VERSION = "0.2.3";
+const VERSION = "0.3.0-beta.1";
 
 function printMainHelp() {
   console.log(`marp-slides v${VERSION}`);

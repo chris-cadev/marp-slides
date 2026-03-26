@@ -87,13 +87,15 @@ export function updateVersion(newVersion: string): void {
   jsrJson.version = newVersion;
   fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 2) + "\n");
 
-  const scriptPath = path.join(rootDir, "marp-slides.ts");
-  let scriptContent = fs.readFileSync(scriptPath, "utf-8");
-  scriptContent = scriptContent.replace(
-    /const VERSION = "[^"]+";/,
-    `const VERSION = "${newVersion}";`
-  );
-  fs.writeFileSync(scriptPath, scriptContent);
+  const cliPath = path.join(rootDir, "cli.ts");
+  if (fs.existsSync(cliPath)) {
+    let cliContent = fs.readFileSync(cliPath, "utf-8");
+    cliContent = cliContent.replace(
+      /const VERSION = "[^"]+";/,
+      `const VERSION = "${newVersion}";`
+    );
+    fs.writeFileSync(cliPath, cliContent);
+  }
 
   const readmePath = path.join(rootDir, "README.md");
   if (fs.existsSync(readmePath)) {
